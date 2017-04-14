@@ -111,6 +111,7 @@ def badDataCheck(frame_dtype, badValCount):
     return good_frames;
 
 #used to store good frames from checking functions that will be compared
+# Just a test commit comment
 good_frames1 = []
 good_frames2 = []
 good_frames3 = []
