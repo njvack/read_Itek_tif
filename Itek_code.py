@@ -86,8 +86,6 @@ def make_frame_numbers(frames): #works
 
     derivatives = np.diff(record_numbers)
 
-    print(derivatives.size)
-
     for i in range(derivatives.size):
         if derivatives[i] < 0:
             derivatives[i] = derivatives[i] + 256
