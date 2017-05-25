@@ -1,0 +1,6 @@
+author = 'Nathan Vack'
+email = 'njvack@wisc.edu'
+version = '0.1.0dev'
+license = 'MIT license'
+copyright = 'Copyright 2017 Board of Regents of the University of Wisconsin System'
+url = 'https://github.com/njvack/read_itek'
