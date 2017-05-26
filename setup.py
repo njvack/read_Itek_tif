@@ -17,6 +17,7 @@ def read(f):
     return open(f, 'r').read()
 
 requirements = [
+    'numpy'
 ]
 
 test_requirements = [
