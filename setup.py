@@ -4,6 +4,7 @@
 from setuptools import setup, find_packages
 import os
 
+
 def get_locals(filename):
     l = {}
     with open(filename, 'r') as f:
@@ -11,10 +12,13 @@ def get_locals(filename):
         exec(code, {}, l)
     return l
 
+
 metadata = get_locals(os.path.join('src', 'read_itek', '_metadata.py'))
+
 
 def read(f):
     return open(f, 'r').read()
+
 
 requirements = [
     'numpy'
@@ -33,7 +37,7 @@ setup(
     author_email='njvack@wisc.edu',
     url='https://github.com/njvack/read_itek',
     packages=find_packages('src'),
-    package_dir={'':'src'},
+    package_dir={'': 'src'},
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
