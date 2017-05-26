@@ -1,33 +1,81 @@
 #!/usr/bin/env python
 
-#THIS CODE HAS ERRORS THAT NEED TO BE DEBUGGED
-
 import numpy as np
-import os, time
-import sys
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+logger = logging.getLogger()
 
-def is_good_frame(frame): #works
+FRAME_DTYPE = np.dtype([
+    ('packet1', 'c'),  # should be ASCII 1
+    ('recordNumber', 'B'),
+    ('errorFlags', 'B'),
+    ('statusFlags', 'B'),
+    ('parallelPort', 'B'),
+    ('trRegister', '2B'),
+    ('chans127to109', '(19,3)B'),
+    ('packet2', 'c'),  # should be ASCII 2
+    ('chans108to89', '(20,3)B'),
+    ('packet3', 'c'),  # should be ASCII 3
+    ('chans88to69', '(20,3)B'),
+    ('packet4', 'c'),  # should be ASCII 4
+    ('chans68to49', '(20,3)B'),
+    ('packet5', 'c'),  # should be ASCII 5
+    ('chans48to29', '(20,3)B'),
+    ('packet6', 'c'),  # should be ASCII 6
+    ('chans28to09', '(20,3)B'),
+    ('packet7', 'c'),  # should be ASCII 7
+    ('chans08to00', '(9,3)B'),
+    ('sameRecordNumber', 'B'),  # Same as recordNumber
+    ('frameTerminator', '2B')  # Should be [0x55 0xAA]
+])
+
+
+def is_good_frame(frame):
     # True if a frame is well-formed, false otherwise
     # record numbers, packet numbers, terminator should be 0x55 0xAA
+    return (
+        frame['recordNumber'] == frame['sameRecordNumber'] and
+        frame['packet1'] == b'1' and
+        frame['packet2'] == b'2' and
+        frame['packet3'] == b'3' and
+        frame['packet4'] == b'4' and
+        frame['packet5'] == b'5' and
+        frame['packet6'] == b'6' and
+        frame['packet7'] == b'7' and
+        frame['frameTerminator'][0] == 0x55 and
+        frame['frameTerminator'][1] == 0xAA
+    )
 
-    if (frame['recordNumber'] == frame['sameRecordNumber'] and
-    frame['packet1'] == b'1' and frame['packet2'] == b'2' and
-    frame['packet3'] == b'3' and frame['packet4'] == b'4' and
-    frame['packet5'] == b'5' and frame['packet6'] == b'6' and
-    frame['packet7'] == b'7' and frame['frameTerminator'][0] == 0x55 and
-    frame['frameTerminator'][1] == 0xAA):
-        return True
-    else:
-        return False
 
-def seek_to_first_good_frame(frames): #works
-    # Given an open file, seek() to the offset of the first well-formed frame in the file
+def first_good_frame_byte(infile):
+    # Returns the byte offset of the first good frame in infile.
+    # Does not change the byte position of infile.
+    original_offset = infile.tell()
+    first_good_frame_byte = None
+    try:
+        first_good_frame_byte = _seek_to_first_good_frame(infile)
+    finally:
+        infile.seek(original_offset)
+    return first_good_frame_byte
 
-    for i in range(frames.shape[0]):
-        if is_good_frame(frames[i]) == True:
-            first_good_index = i
-            return first_good_index
-    return None
+
+def _seek_to_first_good_frame(infile):
+    # Seeks to the first good frame in a infile, returns it. If we can't find
+    # one, we'll read past the end of the file and throw an exception.
+    # Leaves the position of infile altered.
+    infile.seek(0, 2)
+    file_length = infile.tell()
+    logging.debug("file is {0} bytes long".format(file_length))
+    for start_byte in range(file_length):
+        logging.debug("looking for good frame at byte {0}".format(start_byte))
+        infile.seek(start_byte)
+        frame = np.fromfile(infile, count=1, dtype=FRAME_DTYPE)
+        if is_good_frame(frame[0]):
+            return start_byte
+
+
+
+
 
 def read_frames(infile): #works
 
@@ -106,6 +154,7 @@ def convert_three_byte(frame):
     data_out = data_out.flatten()
 
     return data_out
+
 
 def make_frame_numbers(frames): #works
     # Given an open file seek()ed to the first good frame of data, return an increasing list of integers
