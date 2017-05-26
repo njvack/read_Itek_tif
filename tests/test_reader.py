@@ -8,11 +8,11 @@ test_read_itek
 Tests for `reader` module.
 """
 
-import pytest
+# import pytest
 
 
 from read_itek import reader
 
 
-def test_content():
-    pass
+def test_frame_size():
+    assert reader.FRAME_DTYPE.itemsize == 400
