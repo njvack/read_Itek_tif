@@ -119,32 +119,21 @@ def convert_three_byte(frame):
     return data_out
 
 
-def make_frame_numbers(frames): #works
-    # Given an open file seek()ed to the first good frame of data, return an increasing list of integers
-    # indicating the index of each frame of data, starting at 0 and taking into account skipped frames
+def record_numbers(frames):
+    record_counter = frames['recordNumber'].astype(np.int32)
+    changes = np.diff(record_counter)
 
-    number_array = np.zeros(frames.shape, dtype=np.intp)
+    # Since recordNumber is a ubyte, when we hit 255 we wrap back to 0 and the
+    # derivative is -255. Adding 256 to this brings the numbers back around.
+    # Note that this fails if we wind up skipping more than 255 frames in a row
+    # but there's no way to detect that anyhow
+    changes[changes < 0] += 256
+    recnums = np.cumsum(changes)
 
-    first_good_frame = seek_to_first_good_frame(frames)
+    out = np.zeros(len(frames), dtype=np.int32)
+    out[1:] = recnums
+    return out
 
-    record_numbers = np.zeros(0)
-    most_frames = np.zeros(0)
-    running_sum = 0
-
-    for i in range(first_good_frame, frames.shape[0]):
-        record_numbers = np.append(record_numbers, frames[i]['recordNumber'])
-
-    derivatives = np.diff(record_numbers)
-
-    for i in range(derivatives.size):
-        if derivatives[i] < 0:
-            derivatives[i] = derivatives[i] + 256
-        running_sum += derivatives[i]
-        most_frames = np.append(most_frames, running_sum)
-
-    # compute frame numbers, will be one element too short
-    number_array[1:] = most_frames
-    return number_array
 
 def print_packet_line(frame_ar, packet):
 
