@@ -5,6 +5,10 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 logger = logging.getLogger()
 
+# Note that the channel data is stored in 3-byte, big-endian, 2s compliment
+# signed words. We'll need to convert them into 4-byte words for this to make
+# any sense.
+
 FRAME_DTYPE = np.dtype([
     ('packet1', 'c'),  # should be ASCII 1
     ('recordNumber', 'B'),
