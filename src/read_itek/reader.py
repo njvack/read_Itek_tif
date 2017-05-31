@@ -78,51 +78,10 @@ def _seek_to_first_good_frame(infile):
             return start_byte
 
 
+def read_frames(infile):
+    _seek_to_first_good_frame(infile)
+    return np.fromfile(infile, dtype=FRAME_DTYPE)  # TODO: Handle truncation
 
-
-
-def read_frames(infile): #works
-
-    frame_dtype = np.dtype([
-
-        ('packet1', 'c'), # This should be ASCII 1
-        ('recordNumber', 'B'),
-        ('errorFlags', 'B'),
-        ('statusFlags', 'B'),
-        ('parallelPort', 'B'),
-        ('trRegister', '2B'),
-        ('chans127to109', '(19,3)B'),
-
-        ('packet2', 'c'), # This should be ASCII 2
-        ('chans108to89', '(20,3)B'),
-
-        ('packet3', 'c'), # This should be ASCII 3
-        ('chans88to69', '(20,3)B'),
-
-        ('packet4', 'c'), # This should be ASCII 4
-        ('chans68to49', '(20,3)B'),
-
-        ('packet5', 'c'), # This should be ASCII 5
-        ('chans48to29', '(20,3)B'),
-
-        ('packet6', 'c'), # This should be ASCII 6
-        ('chans28to09', '(20,3)B'),
-
-        ('packet7', 'c'), # This should be ASCII 7
-        ('chans08to00', '(9,3)B'),
-
-        ('sameRecordNumber', 'B'), # same record number
-        ('frameTerminator', '(2,1)B') # end
-    ])
-
-    f = open(infile, 'rb')
-
-    if f == None:
-        print("The file is empty.")
-
-    frames = np.fromfile(f, dtype = frame_dtype)
-
-    return frames
 
 def sign_extend(ar): #for big endian which means msb must be at index 0
 
