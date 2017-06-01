@@ -33,6 +33,18 @@ FRAME_DTYPE = np.dtype([
     ('frameTerminator', '2B')  # Should be [0x55 0xAA]
 ])
 
+INTERNAL_DTYPE = np.dtype([
+    ('record_number', 'B'),
+    ('error_flags', 'B'),
+    ('status_flags', 'B'),
+    ('parallel_port', 'B'),
+    ('tr_register', '2B'),
+    ('channels', '<i4', 128)
+])
+
+
+CHANNELS = 128
+
 
 def is_good_frame(frame):
     # True if a frame is well-formed, false otherwise
@@ -75,12 +87,48 @@ def _seek_to_first_good_frame(infile):
         infile.seek(start_byte)
         frame = np.fromfile(infile, count=1, dtype=FRAME_DTYPE)
         if is_good_frame(frame[0]):
+            logger.debug("found good frame at byte {0}".format(start_byte))
             return start_byte
 
 
 def read_frames(infile):
     _seek_to_first_good_frame(infile)
-    return np.fromfile(infile, dtype=FRAME_DTYPE)  # TODO: Handle truncation
+    frames = np.fromfile(infile, dtype=FRAME_DTYPE)  # TODO: Handle truncation
+    logger.debug("read {0} frames".format(len(frames)))
+    return frames
+
+
+def convert_channels_to_le_i4(frames):
+    int32_data = np.zeros((len(frames), CHANNELS), '<i4')
+    int32_data.dtype = np.byte
+    int32_data = int32_data.reshape(len(frames), CHANNELS, 4)
+    # We're swapping both the order of the channel blocks and the order of the
+    # bytes
+    int32_data[:, 0:9, 1:4] = frames['chans08to00'][:, ::-1, ::-1]
+    int32_data[:, 9:29, 1:4] = frames['chans28to09'][:, ::-1, ::-1]
+    int32_data[:, 29:49, 1:4] = frames['chans48to29'][:, ::-1, ::-1]
+    int32_data[:, 49:69, 1:4] = frames['chans68to49'][:, ::-1, ::-1]
+    int32_data[:, 69:89, 1:4] = frames['chans88to69'][:, ::-1, ::-1]
+    int32_data[:, 89:109, 1:4] = frames['chans108to89'][:, ::-1, ::-1]
+    int32_data[:, 109:128, 1:4] = frames['chans127to109'][:, ::-1, ::-1]
+    sign_mask = int32_data[:, :, 1] < 0
+    int32_data[:, :, 0][sign_mask] = -1
+    int32_data = int32_data.reshape(len(frames), CHANNELS * 4)
+    int32_data.dtype = '<i4'
+    return int32_data
+
+
+def convert_frames_to_internal_type(frames):
+    # Simplifies the frames structure, and converts its 3-byte ints into
+    # int32.
+    internal_struct = np.zeros(len(frames), dtype=INTERNAL_DTYPE)
+    internal_struct['channels'] = convert_channels_to_le_i4(frames)
+    internal_struct['record_number'] = record_numbers(frames)
+    internal_struct['error_flags'] = frames['errorFlags']
+    internal_struct['status_flags'] = frames['statusFlags']
+    internal_struct['parallel_port'] = frames['parallelPort']
+    internal_struct['tr_register'] = frames['trRegister']
+    return internal_struct
 
 
 def sign_extend(ar): #for big endian which means msb must be at index 0
@@ -94,6 +142,7 @@ def sign_extend(ar): #for big endian which means msb must be at index 0
             ar[i, 0] = 0 #changing msb to show the value is positive
 
     return ar
+
 
 def convert_three_byte(frame):
     data_out = np.zeros(128, dtype=np.int32)  # You're looking to make a 128-element array of int32.
