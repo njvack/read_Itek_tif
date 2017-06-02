@@ -131,43 +131,6 @@ def convert_frames_to_internal_type(frames):
     return internal_struct
 
 
-def sign_extend(ar): #for big endian which means msb must be at index 0
-
-    neg_mask = ar[:, 1] < 0
-
-    for i in range(len(neg_mask)):
-        if neg_mask[i] == True:
-            ar[i, 0] = -1 #changing msb to show the value is negative
-        else:
-            ar[i, 0] = 0 #changing msb to show the value is positive
-
-    return ar
-
-
-def convert_three_byte(frame):
-    data_out = np.zeros(128, dtype=np.int32)  # You're looking to make a 128-element array of int32.
-    data_out.dtype = np.byte
-    data_out = data_out.reshape(-1, 4)  # Shape is now (128,4) and dtype is byte
-
-    # reverse the data in frame.
-    # change 0:3 to 1:4 because data is big-endian
-    data_out[0:9, 1:4] = frame['chans08to00'][::-1]
-    data_out[9:29, 1:4] = frame['chans28to09'][::-1]
-    data_out[29:49, 1:4] = frame['chans48to29'][::-1]
-    data_out[49:69, 1:4] = frame['chans68to49'][::-1]
-    data_out[69:89, 1:4] = frame['chans88to69'][::-1]
-    data_out[89:109, 1:4] = frame['chans108to89'][::-1]
-    data_out[109:128, 1:4] = frame['chans127to109'][::-1]
-
-    data_out = sign_extend(data_out)
-
-    data_out.dtype = np.int32
-
-    data_out = data_out.flatten()
-
-    return data_out
-
-
 def record_numbers(frames):
     record_counter = frames['recordNumber'].astype(np.int32)
     changes = np.diff(record_counter)
