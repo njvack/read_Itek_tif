@@ -3,6 +3,8 @@
 
 from os import path
 from read_itek import reader
+import logging
+reader.logger.setLevel(logging.DEBUG)
 
 
 DATA_PATH = path.join(path.dirname(path.abspath(__file__)), "data")
