@@ -1,18 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-test_read_itek
-----------------------------------
-
-Tests for `reader` module.
-"""
-
-# import pytest
-
-
+from os import path
 from read_itek import reader
 
 
+DATA_PATH = path.join(path.dirname(path.abspath(__file__)), "data")
+
+
 def test_frame_size():
+    # Yes I know this is daft
     assert reader.FRAME_DTYPE.itemsize == 400
+
+
+def test_reads_file():
+    f = open(path.join(DATA_PATH, "simple.itf"), "r")
+    frames = reader.read_frames(f)
+    assert len(frames) > 0
+
+
+def test_skips_broken_data():
+    f = open(path.join(DATA_PATH, "padded.itf"), "r")
+    frames = reader.read_frames(f)
+    assert len(frames) > 0
