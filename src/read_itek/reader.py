@@ -80,6 +80,21 @@ BIT_RES = pow(2.0, 23.0) - 1.0
 MICROV = 1.0e+06
 
 
+def read_data(itk_filename):
+    ita_filename = itk_filename + ".ita"
+    frames = None
+    cards = None
+    with open(itk_filename, "rb") as f:
+        frames = read_frames(f)
+    itk_data = convert_frames_to_internal_type(frames)
+    try:
+        with open(ita_filename, "r") as f:
+            cards = read_ita(f)
+    except IOError:
+        logger.warn("Could not read {}".format(ita_filename))
+    return (itk_data, cards)
+
+
 def read_frames(infile):
     _seek_to_first_good_frame(infile)
     frames = np.fromfile(infile, dtype=FRAME_DTYPE)  # TODO: Handle truncation
