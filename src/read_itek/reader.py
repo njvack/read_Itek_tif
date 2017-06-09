@@ -39,7 +39,9 @@ INTERNAL_DTYPE = np.dtype([
     ('status_flags', 'B'),
     ('parallel_port', 'B'),
     ('tr_register', '2B'),
-    ('channels', '<i4', 128)
+    ('channels', '<i4', 128),
+    ('is_missing', '?')
+])
 ])
 
 
@@ -121,13 +123,16 @@ def convert_channels_to_le_i4(frames):
 def convert_frames_to_internal_type(frames):
     # Simplifies the frames structure, and converts its 3-byte ints into
     # int32.
-    internal_struct = np.zeros(len(frames), dtype=INTERNAL_DTYPE)
-    internal_struct['channels'] = convert_channels_to_le_i4(frames)
-    internal_struct['record_number'] = record_numbers(frames)
-    internal_struct['error_flags'] = frames['errorFlags']
-    internal_struct['status_flags'] = frames['statusFlags']
-    internal_struct['parallel_port'] = frames['parallelPort']
-    internal_struct['tr_register'] = frames['trRegister']
+    rnums = record_numbers(frames)
+    internal_struct = np.zeros((rnums[-1] + 1), dtype=INTERNAL_DTYPE)
+    internal_struct['is_missing'] = True
+    internal_struct['is_missing'][rnums] = False
+    internal_struct['channels'][rnums] = convert_channels_to_le_i4(frames)
+    internal_struct['record_number'][rnums] = record_numbers(frames)
+    internal_struct['error_flags'][rnums] = frames['errorFlags']
+    internal_struct['status_flags'][rnums] = frames['statusFlags']
+    internal_struct['parallel_port'][rnums] = frames['parallelPort']
+    internal_struct['tr_register'][rnums] = frames['trRegister']
     return internal_struct
 
 
