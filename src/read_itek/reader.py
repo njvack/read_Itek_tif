@@ -4,6 +4,7 @@ import numpy as np
 import logging
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 # Note that the channel data is stored in 3-byte, big-endian, 2s compliment
 # signed words. We'll need to convert them into 4-byte words for this to make
