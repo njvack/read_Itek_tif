@@ -42,10 +42,45 @@ INTERNAL_DTYPE = np.dtype([
     ('channels', '<i4', 128),
     ('is_missing', '?')
 ])
+
+ITA_DTYPE = np.dtype([
+    ('gain', 'd'),
+    ('lpf', 'd'),
+    ('on', '?')
 ])
 
 
 CHANNELS = 128
+CARDS = 16
+
+GAIN_MAP = {
+    '0': 400,
+    '1': 10000,
+    '2': 2000
+}
+
+FILTER_MAP = {
+    '0': 100,
+    '1': 300
+}
+
+ON_MAP = {
+    'true': True,
+    'false': False
+}
+
+ITA_MAPPER = {
+    'on': ON_MAP,
+    'lpf': FILTER_MAP,
+    'gain': GAIN_MAP
+}
+
+
+def read_frames(infile):
+    _seek_to_first_good_frame(infile)
+    frames = np.fromfile(infile, dtype=FRAME_DTYPE)  # TODO: Handle truncation
+    logger.debug("read {0} frames".format(len(frames)))
+    return frames
 
 
 def is_good_frame(frame):
@@ -93,13 +128,6 @@ def _seek_to_first_good_frame(infile):
             return start_byte
 
 
-def read_frames(infile):
-    _seek_to_first_good_frame(infile)
-    frames = np.fromfile(infile, dtype=FRAME_DTYPE)  # TODO: Handle truncation
-    logger.debug("read {0} frames".format(len(frames)))
-    return frames
-
-
 def convert_channels_to_le_i4(frames):
     int32_data = np.zeros((len(frames), CHANNELS), '<i4')
     int32_data.dtype = np.byte
@@ -118,6 +146,27 @@ def convert_channels_to_le_i4(frames):
     int32_data = int32_data.reshape(len(frames), CHANNELS * 4)
     int32_data.dtype = '<i4'
     return int32_data
+
+
+def read_ita(infile):
+    ita_data = np.zeros(CARDS, dtype=ITA_DTYPE)
+    for line in infile:
+        line = line.strip()
+        cnum, key, val = parse_ita_line(line)
+        ita_data[key][cnum] = map_ita_val(key, val)
+    return ita_data
+
+
+def parse_ita_line(line):
+    full_key, val = line.split("=")
+    _, card_num_str, key = full_key.split(".")
+    cnum = int(card_num_str)
+    return cnum, key, val
+
+
+def map_ita_val(key, val):
+    mapper = ITA_MAPPER[key]
+    return mapper[val]
 
 
 def convert_frames_to_internal_type(frames):
