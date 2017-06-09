@@ -75,6 +75,10 @@ ITA_MAPPER = {
     'gain': GAIN_MAP
 }
 
+V_REF = 2.5
+BIT_RES = pow(2.0, 23.0) - 1.0
+MICROV = 1.0e+06
+
 
 def read_frames(infile):
     _seek_to_first_good_frame(infile)
@@ -167,6 +171,10 @@ def parse_ita_line(line):
 def map_ita_val(key, val):
     mapper = ITA_MAPPER[key]
     return mapper[val]
+
+
+def scale_factor(gain):
+    return (V_REF * MICROV) / (BIT_RES * gain)
 
 
 def convert_frames_to_internal_type(frames):
