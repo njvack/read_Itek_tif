@@ -43,6 +43,11 @@ setup(
     license="MIT license",
     zip_safe=False,
     keywords='read_itek',
+    entry_points={
+        'console_scripts': [
+            'itf2csv = read_itek.itf2csv:main'
+        ]
+    },
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
