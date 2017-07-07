@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Copyright (c) 2017 Board of Regents of the University of Wisconsin System
+# Written by Nathan Vack <njvack@wisc.edu>
+
 """Usage: itf2csv [options] <data_file> [<output_file>]
 
 Reads a .itf file written by ItekAnalyze, and converts it to a .csv format,

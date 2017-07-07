@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# Copyright (c) 2017 Board of Regents of the University of Wisconsin System
+# Written by Nathan Vack <njvack@wisc.edu>
 
 import numpy as np
 import logging
