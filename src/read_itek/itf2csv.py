@@ -20,7 +20,7 @@ from read_itek import __version__ as VERSION
 from read_itek import reader
 from read_itek.vendor.docopt import docopt
 
-logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger()
 
 
