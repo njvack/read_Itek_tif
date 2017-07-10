@@ -45,7 +45,8 @@ setup(
     keywords='read_itek',
     entry_points={
         'console_scripts': [
-            'itf2csv = read_itek.itf2csv:main'
+            'itf2csv = read_itek.itf2csv:main',
+            'itf2hdf5 = read_itek.itf2hdf5:main'
         ]
     },
     classifiers=[

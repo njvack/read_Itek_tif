@@ -55,6 +55,7 @@ ITA_DTYPE = np.dtype([
 
 CHANNELS = 128
 CARDS = 16
+CHANNELS_PER_CARD = CHANNELS // CARDS
 
 GAIN_MAP = {
     '0': 400,
@@ -81,6 +82,8 @@ ITA_MAPPER = {
 V_REF = 2.5
 BIT_RES = pow(2.0, 23.0) - 1.0
 MICROV = 1.0e+06
+
+SAMPLES_PER_SECOND = 488
 
 
 def read_data(itk_filename):
@@ -232,3 +235,19 @@ def record_numbers(frames):
     out[1:] = recnums
     return out
 
+
+def channel_map(card_order):
+    """
+    Get a mapping between channels and cards -- there are 8 channels per
+    card, and 16 channels in the system for a total of 128 channels.
+    Normally, this would just be 0000000011111111...1515151515151515
+    but in this case, channels 0-7 are on card 1, channels 8-15 are on card
+    2
+    Anyhow this returns CHANNELS integers such that channel_map[i] tells
+    which card you're dealing with.
+    """
+    sorted_order = sorted(list(card_order))
+    if not sorted_order == list(range(CARDS)):
+        raise ValueError("channel_order must contain 0 through 15")
+    card_ar = np.array(card_order)
+    return np.repeat(card_ar, CHANNELS_PER_CARD)
