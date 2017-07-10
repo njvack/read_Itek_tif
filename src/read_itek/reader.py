@@ -98,10 +98,24 @@ def read_data(itk_filename):
     return (itk_data, cards)
 
 
+def open_file_size(infile):
+    pos = infile.tell()
+    infile.seek(0, 2)
+    size = infile.tell()
+    infile.seek(pos)
+    return size
+
+
 def read_frames(infile):
-    _seek_to_first_good_frame(infile)
-    frames = np.fromfile(infile, dtype=FRAME_DTYPE)  # TODO: Handle truncation
-    logger.debug("read {0} frames".format(len(frames)))
+    total_bytes = open_file_size(infile)
+    max_possible_frames = total_bytes // FRAME_DTYPE.itemsize
+    frames = np.zeros(max_possible_frames, dtype=FRAME_DTYPE)
+    logger.debug("File size is {0} bytes, allocated {1} frames".format(
+        total_bytes, max_possible_frames))
+    infile.seek(0)
+    for frame_index, frame in enumerate(generate_valid_frames(infile)):
+        frames[frame_index] = frame
+    logger.debug("Read {0} frames.".format(frame_index))
     return frames
 
 
@@ -122,32 +136,24 @@ def is_good_frame(frame):
     )
 
 
-def first_good_frame_byte(infile):
-    # Returns the byte offset of the first good frame in infile.
-    # Does not change the byte position of infile.
-    original_offset = infile.tell()
-    first_good_frame_byte = None
-    try:
-        first_good_frame_byte = _seek_to_first_good_frame(infile)
-    finally:
-        infile.seek(original_offset)
-    return first_good_frame_byte
-
-
-def _seek_to_first_good_frame(infile):
-    # Seeks to the first good frame in a infile, returns it. If we can't find
-    # one, we'll read past the end of the file and throw an exception.
-    # Leaves the position of infile altered.
-    infile.seek(0, 2)
-    file_length = infile.tell()
-    logging.debug("file is {0} bytes long".format(file_length))
-    for start_byte in range(file_length):
-        logging.debug("looking for good frame at byte {0}".format(start_byte))
-        infile.seek(start_byte)
-        frame = np.fromfile(infile, count=1, dtype=FRAME_DTYPE)
-        if is_good_frame(frame[0]):
-            logger.debug("found good frame at byte {0}".format(start_byte))
-            return start_byte
+def generate_valid_frames(infile):
+    infile.seek(0)
+    blank = np.zeros(1, dtype=FRAME_DTYPE)[0]
+    frame = blank
+    while not is_good_frame(frame):
+        cur_byte = infile.tell()
+        read = np.fromfile(infile, count=1, dtype=FRAME_DTYPE)
+        if len(read) < 1:
+            logger.debug("Reached end of file.")
+            return
+        frame = read[0]
+        if not is_good_frame(frame):
+            logger.debug("Read bad frame at byte {0}.".format(
+                cur_byte, frame))
+            infile.seek(cur_byte + 1)
+        else:
+            yield frame
+        frame = blank
 
 
 def convert_channels_to_le_i4(frames):
