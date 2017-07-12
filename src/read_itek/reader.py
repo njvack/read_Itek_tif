@@ -116,9 +116,11 @@ def read_frames(infile):
     logger.debug("File size is {0} bytes, allocated {1} frames".format(
         total_bytes, max_possible_frames))
     infile.seek(0)
+    max_index = 0
     for frame_index, frame in enumerate(generate_valid_frames(infile)):
         frames[frame_index] = frame
-    logger.debug("Read {0} frames.".format(frame_index))
+        max_index = frame_index
+    logger.debug("Read {0} valid frames.".format(max_index))
     return frames
 
 
