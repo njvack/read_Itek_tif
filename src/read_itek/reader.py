@@ -37,7 +37,6 @@ FRAME_DTYPE = np.dtype([
 ])
 
 INTERNAL_DTYPE = np.dtype([
-    ('record_number', 'B'),
     ('error_flags', 'B'),
     ('status_flags', 'B'),
     ('parallel_port', 'B'),
@@ -216,7 +215,6 @@ def convert_frames_to_internal_type(frames):
     internal_struct['is_missing'] = True
     internal_struct['is_missing'][rnums] = False
     internal_struct['channels'][rnums] = convert_channels_to_le_i4(frames)
-    internal_struct['record_number'][rnums] = record_numbers(frames)
     internal_struct['error_flags'][rnums] = frames['errorFlags']
     internal_struct['status_flags'][rnums] = frames['statusFlags']
     internal_struct['parallel_port'][rnums] = frames['parallelPort']
