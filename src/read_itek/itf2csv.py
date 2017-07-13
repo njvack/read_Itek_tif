@@ -9,6 +9,8 @@ Reads a .itf file written by ItekAnalyze, and converts it to a .csv format,
 with one channel per row, followed by parallel port data. If a corresponding
 .itf.ita file exists, it reads that as well and uses it to scale the data.
 
+Made to mirror, as closely as possible, the behavor of docs/readitf.c
+
 Options:
   -v, --verbose  Display debugging output
 """
