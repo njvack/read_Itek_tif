@@ -93,6 +93,8 @@ def read_data(itk_filename):
     with open(itk_filename, "rb") as f:
         frames = read_frames(f)
     itk_data = convert_frames_to_internal_type(frames)
+    logger.debug("{} frames are missing.".format(
+        np.sum(itk_data['is_missing'])))
     try:
         with open(ita_filename, "r") as f:
             cards = read_ita(f)
