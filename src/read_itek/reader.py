@@ -83,7 +83,7 @@ V_REF = 2.5
 BIT_RES = pow(2.0, 23.0) - 1.0
 MICROV = 1.0e+06
 
-SAMPLES_PER_SECOND = 488
+SAMPLES_PER_SECOND = 1000 / 2.048
 
 
 def read_data(itk_filename):
