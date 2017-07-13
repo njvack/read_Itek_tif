@@ -5,6 +5,8 @@
 
 """Usage: itf2hdf5 [options] <itf_file> <hdf5_file>
 
+Converts a .itf and .itf.ita file (if available) pair into a single HDF5 file.
+
 Options:
   -v --verbose           Show debugging output
   --card_map=<order>     Change the mapping of cards to channel blocks
@@ -14,6 +16,38 @@ Options:
                          off
   --channel_names=<str>  Use a string of the format num1:name,num2:name,...
                          to name the channels.
+
+The output file layout looks like:
+
+/channels/channel_XXX:  The data for a channel. Signed 32-bit integer.
+  scale_factor: The scale factor needed to convert this channel to mV.
+  gain:         The gain, as read from the .ita file
+  lpf:          The lowpass filter cutoff, as read from the .ita file
+  on:           Whether the channel is on or not, as read from the .ita file
+
+/channels/NAME:         An alias for one of the numbered channels.
+
+/parallel_port:         Parallel port data. 1 unsigned byte / sample.
+
+/is_missing:            True if this frame is missing (as determied by the
+                        record counter and whether read frames are valid).
+                        Boolean per sample.
+
+/error_flags:           Error flags as reported by itekanalyze. (meaning?)
+                        1 unsigned byte / sample.
+
+/status_flags:          Status flags as reported by itekanalyze. (meaning?)
+                        Unsigned byte / sample.
+
+/tr_register:           I don't know what this is used for at all.
+                        2 unsigned bytes / sample.
+
+In addition, the root group has the following attributes:
+  samples_per_second:   The sampling rate of the file. Always 1000 / 2.048.
+  read_itek_version:    The version of read_itek that made this .hdf5 file.
+
+If the .itf.ita file is missing, all channel attributes are set to 'unknown'
+except for scale_factor, which is set to 1.0.
 """
 
 import sys
@@ -48,7 +82,6 @@ def main():
         logger.error("Didn't understand channel_names {}".format(
             channel_name_str))
         sys.exit(1)
-    logger.debug('Channel map: {}'.format(channel_map))
     _save_data(
         args['<hdf5_file>'],
         data,
@@ -127,7 +160,6 @@ def _save_channels(
         save_all_channels,
         channel_names):
     cg = h5f.create_group('/channels')
-    logger.debug(channels.shape)
     for i, ch in enumerate(channels.T):
         card = get_card_data_with_fallback(cards, i, channel_map)
         if card['on'] or save_all_channels:
@@ -137,7 +169,8 @@ def _save_channels(
                 ds.attrs[key] = val
             channel_name = channel_names.get(i)
             if channel_name:
-                logger.debug('{} -> {}'.format(channel_name, channel_label))
+                logger.debug('Linking {} to {}'.format(
+                    channel_name, channel_label))
                 cg[channel_name] = ds
 
 
