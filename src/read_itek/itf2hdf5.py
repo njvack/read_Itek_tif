@@ -70,7 +70,6 @@ def main():
         logger.setLevel(logging.DEBUG)
         reader.logger.setLevel(logging.DEBUG)
     logger.debug(args)
-    logger.debug('Reading {}'.format(args['<itf_file>']))
 
     data, cards = reader.read_data(args['<itf_file>'])
     channel_map = reader.channel_map(

@@ -86,6 +86,7 @@ SAMPLES_PER_SECOND = 1000 / 2.048
 
 
 def read_data(itk_filename):
+    logger.debug('Reading {}'.format(itk_filename))
     ita_filename = itk_filename + ".ita"
     frames = None
     cards = None
