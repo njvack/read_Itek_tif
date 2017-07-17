@@ -173,15 +173,15 @@ def convert_channels_to_le_i4(frames):
     int32_data = int32_data.reshape(len(frames), CHANNELS, 4)
     # We're swapping both the order of the channel blocks and the order of the
     # bytes
-    int32_data[:, 0:9, 1:4] = frames['chans08to00'][:, ::-1, ::-1]
-    int32_data[:, 9:29, 1:4] = frames['chans28to09'][:, ::-1, ::-1]
-    int32_data[:, 29:49, 1:4] = frames['chans48to29'][:, ::-1, ::-1]
-    int32_data[:, 49:69, 1:4] = frames['chans68to49'][:, ::-1, ::-1]
-    int32_data[:, 69:89, 1:4] = frames['chans88to69'][:, ::-1, ::-1]
-    int32_data[:, 89:109, 1:4] = frames['chans108to89'][:, ::-1, ::-1]
-    int32_data[:, 109:128, 1:4] = frames['chans127to109'][:, ::-1, ::-1]
-    sign_mask = int32_data[:, :, 1] < 0
-    int32_data[:, :, 0][sign_mask] = -1
+    int32_data[:, 0:9, 0:3] = frames['chans08to00'][:, ::-1, ::-1]
+    int32_data[:, 9:29, 0:3] = frames['chans28to09'][:, ::-1, ::-1]
+    int32_data[:, 29:49, 0:3] = frames['chans48to29'][:, ::-1, ::-1]
+    int32_data[:, 49:69, 0:3] = frames['chans68to49'][:, ::-1, ::-1]
+    int32_data[:, 69:89, 0:3] = frames['chans88to69'][:, ::-1, ::-1]
+    int32_data[:, 89:109, 0:3] = frames['chans108to89'][:, ::-1, ::-1]
+    int32_data[:, 109:128, 0:3] = frames['chans127to109'][:, ::-1, ::-1]
+    sign_mask = int32_data[:, :, 2] < 0
+    int32_data[:, :, 3][sign_mask] = -1
     int32_data = int32_data.reshape(len(frames), CHANNELS * 4)
     int32_data.dtype = '<i4'
     return int32_data
