@@ -3,17 +3,18 @@
 # Copyright (c) 2017 Board of Regents of the University of Wisconsin System
 # Written by Nathan Vack <njvack@wisc.edu>
 
-"""Usage: itf_clip_stats [options] <itf_file> <hdf5_file>
+"""Usage: itf_clip_stats [options] <itf_file>...
 
-For each channel in the file, show how much of the channel is clipping. Prints
+For each channel in each file, show how much of the channel is clipping. Prints
 tab-separated output, of the format:
 
 FILENAME    CHANNEL     PERCENT_CLIPPED
 
 Options:
   -v --verbose           Show debugging output
-  --channels=<chans>     A comma-separated list of channels to report on, or
-                         'on', or 'all'
+  --channels=<chans>     A comma-separated list of channel numbers to report
+                         or, 'on', or 'all'
+                         [default: on]
   --channel_names=<str>  Use a string of the format num1:name,num2:name,...
                          to name the channels.
   --card_map=<order>     Change the mapping of cards to channel blocks.
@@ -25,8 +26,6 @@ Options:
 import sys
 import csv
 import logging
-
-import numpy as np
 
 from read_itek import __version__ as VERSION
 from read_itek import reader
@@ -43,6 +42,10 @@ def main():
         logger.setLevel(logging.DEBUG)
         reader.logger.setLevel(logging.DEBUG)
     logger.debug(args)
+
+
+def report_clip_stats(files):
+    pass
 
 
 if __name__ == '__main__':
