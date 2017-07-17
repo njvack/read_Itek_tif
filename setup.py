@@ -30,7 +30,7 @@ test_requirements = [
 
 setup(
     name='read_itek',
-    version='0.1.0dev',
+    version=metadata['version'],
     description="Reads the files written by our MRI-compatible EMG amplifier",
     long_description=read('README.md'),
     author="Nathan Vack",
@@ -46,7 +46,8 @@ setup(
     entry_points={
         'console_scripts': [
             'itf2csv = read_itek.itf2csv:main',
-            'itf2hdf5 = read_itek.itf2hdf5:main'
+            'itf2hdf5 = read_itek.itf2hdf5:main',
+            'itf_clip_stats = read_itek.itf_clip_stats:main'
         ]
     },
     classifiers=[
