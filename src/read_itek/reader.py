@@ -84,6 +84,10 @@ MICROV = 1.0e+06
 
 SAMPLES_PER_SECOND = 1000 / 2.048
 
+# Since we have 2's compliment signed 24-bit ints, this is their range
+VAL_MAX = (2 ** 23) - 1
+VAL_MIN = -(2 ** 23)
+
 
 def read_data(itk_filename):
     logger.debug('Reading {}'.format(itk_filename))
