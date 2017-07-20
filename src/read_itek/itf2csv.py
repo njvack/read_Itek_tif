@@ -43,11 +43,15 @@ def main():
 def write_data(data, cards, outstream):
     logger.debug(cards)
     for i, ch in enumerate(data['channels'].T):
+        # This is incorrect! I'm leaving this here to emulate old behavior.
+        # You really want reader.card_for_channel(cards, i)
+        # but we don't ask for a channel_map here.
         card = cards[i // len(cards)]
         scale_factor = reader.scale_factor(card['gain'])
         scaled = ch * scale_factor
         outstream.write(",".join(str(v) for v in scaled) + "\n")
     outstream.write(",".join(str(v) for v in data['parallel_port']) + "\n")
+
 
 if __name__ == '__main__':
     main()
