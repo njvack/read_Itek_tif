@@ -64,8 +64,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def main():
-    args = docopt(__doc__, version='read_itek {}'.format(VERSION))
+def main(argv=None):
+    args = docopt(__doc__, version='read_itek {}'.format(VERSION), argv=argv)
     if args['--verbose']:
         logger.setLevel(logging.DEBUG)
         reader.logger.setLevel(logging.DEBUG)
@@ -118,24 +118,6 @@ def _save_data(
     h5f.close()
 
 
-def get_card_data_with_fallback(cards, channel_number, channel_map):
-    if cards is None:
-        return {
-            'gain': 'unknown',
-            'scale_factor': 1,
-            'on': 'unknown',
-            'lpf': 'unknown'
-        }
-
-    c = cards[channel_map[channel_number]]
-    return {
-        'gain': c['gain'],
-        'scale_factor': reader.scale_factor(c['gain']),
-        'on': c['on'],
-        'lpf': c['lpf']
-    }
-
-
 def channel_name_mapping(name_str):
     """
     Turns a string like '1:foo,2:bar' into the dict
@@ -160,7 +142,7 @@ def _save_channels(
         channel_names):
     cg = h5f.create_group('/channels')
     for i, ch in enumerate(channels.T):
-        card = get_card_data_with_fallback(cards, i, channel_map)
+        card = reader.card_for_channel(cards, i, channel_map)
         if card['on'] or save_all_channels:
             channel_label = 'channel_{:03d}'.format(i)
             ds = cg.create_dataset(channel_label, data=ch, compression='gzip')
