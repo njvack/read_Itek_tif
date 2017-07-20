@@ -27,8 +27,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def main():
-    args = docopt(__doc__, version="read_itek {}".format(VERSION))
+def main(argv=None):
+    args = docopt(__doc__, version="read_itek {}".format(VERSION), argv=argv)
     if args['--verbose']:
         logger.setLevel(logging.DEBUG)
         reader.logger.setLevel(logging.DEBUG)
