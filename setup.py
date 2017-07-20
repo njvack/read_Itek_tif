@@ -47,7 +47,8 @@ setup(
         'console_scripts': [
             'itf2csv = read_itek.itf2csv:main',
             'itf2hdf5 = read_itek.itf2hdf5:main',
-            'itek_hdf5_clip_stats = read_itek.itek_hdf5_clip_stats:main'
+            'itek_hdf5_clip_stats = read_itek.itek_hdf5_clip_stats:main',
+            'itf_clip_stats = read_itek.itf_clip_stats:main',
         ]
     },
     classifiers=[

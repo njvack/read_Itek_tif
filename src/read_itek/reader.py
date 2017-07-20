@@ -243,6 +243,14 @@ def record_numbers(frames):
     return out
 
 
+def card_order_from_string(card_order_string):
+    return [int(card_num) for card_num in card_order_string.split(',')]
+
+
+def channel_map_from_string(card_order_string):
+    return channel_map(card_order_from_string(card_order_string))
+
+
 def channel_map(card_order):
     """
     Get a mapping between channels and cards -- there are 8 channels per
@@ -254,7 +262,35 @@ def channel_map(card_order):
     which card you're dealing with.
     """
     sorted_order = sorted(list(card_order))
+    logger.debug(sorted_order)
     if not sorted_order == list(range(CARDS)):
         raise ValueError("channel_order must contain 0 through 15")
     card_ar = np.array(card_order)
     return np.repeat(card_ar, CHANNELS_PER_CARD)
+
+
+def on_channels(cards, cmap):
+    # Turn it into a boolean array
+    chan_on_array = [cards[chan_card]['on'] for chan_card in cmap]
+    return [
+        channel_number
+        for channel_number, is_on in enumerate(chan_on_array) if is_on
+    ]
+
+
+def card_data_with_fallback(cards, channel_number, channel_map):
+    if cards is None:
+        return {
+            'gain': 'unknown',
+            'scale_factor': 1,
+            'on': 'unknown',
+            'lpf': 'unknown'
+        }
+
+    c = cards[channel_map[channel_number]]
+    return {
+        'gain': c['gain'],
+        'scale_factor': reader.scale_factor(c['gain']),
+        'on': c['on'],
+        'lpf': c['lpf']
+    }
