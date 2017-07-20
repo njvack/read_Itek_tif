@@ -50,8 +50,8 @@ def main(argv=None):
     logger.debug(args)
     writer = csv.writer(sys.stdout, delimiter='\t')
     writer.writerow(HEADER)
-    channel_map = reader.channel_map(args['--card_map'])
-    channels = args['channels']
+    channel_map = reader.channel_map_from_string(args['--card_map'])
+    channels = args['--channels']
     for filename in args['<hdf5_file>']:
         try:
             report_clip_stats(filename, writer, channels, channel_map)
@@ -61,7 +61,7 @@ def main(argv=None):
 
 def report_clip_stats(filename, writer, channels_str, channel_map):
     itf_data, cards = reader.read_data(filename)
-    keys = channel_ids(channels_str)
+    keys = channel_ids(channels_str, cards, channel_map)
     for channel_number in keys:
         dset = itf_data['channels'][:, channel_number]
         clip_high = (dset[:] >= reader.VAL_MAX)

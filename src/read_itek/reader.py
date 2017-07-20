@@ -2,6 +2,8 @@
 # Copyright (c) 2017 Board of Regents of the University of Wisconsin System
 # Written by Nathan Vack <njvack@wisc.edu>
 
+from collections import defaultdict
+
 import numpy as np
 import logging
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
@@ -44,13 +46,6 @@ INTERNAL_DTYPE = np.dtype([
     ('channels', '<i4', 128),
     ('is_missing', '?')
 ])
-
-ITA_DTYPE = np.dtype([
-    ('gain', 'd'),
-    ('lpf', 'd'),
-    ('on', '?')
-])
-
 
 CHANNELS = 128
 CARDS = 16
@@ -187,13 +182,22 @@ def convert_channels_to_le_i4(frames):
     return int32_data
 
 
+def _default_card():
+    return {
+        'gain': 'unknown',
+        'scale_factor': 1,
+        'on': 'unknown',
+        'lpf': 'unknown'
+    }
+
+
 def read_ita(infile):
-    ita_data = np.zeros(CARDS, dtype=ITA_DTYPE)
+    cards_data = defaultdict(_default_card)
     for line in infile:
         line = line.strip()
         cnum, key, val = parse_ita_line(line)
-        ita_data[key][cnum] = map_ita_val(key, val)
-    return ita_data
+        cards_data[cnum][key] = map_ita_val(key, val)
+    return cards_data
 
 
 def parse_ita_line(line):
@@ -269,6 +273,10 @@ def channel_map(card_order):
     return np.repeat(card_ar, CHANNELS_PER_CARD)
 
 
+def card_for_channel(cards, channel_number, channel_map):
+    return cards[channel_map[channel_number]]
+
+
 def on_channels(cards, cmap):
     # Turn it into a boolean array
     chan_on_array = [cards[chan_card]['on'] for chan_card in cmap]
@@ -276,21 +284,3 @@ def on_channels(cards, cmap):
         channel_number
         for channel_number, is_on in enumerate(chan_on_array) if is_on
     ]
-
-
-def card_data_with_fallback(cards, channel_number, channel_map):
-    if cards is None:
-        return {
-            'gain': 'unknown',
-            'scale_factor': 1,
-            'on': 'unknown',
-            'lpf': 'unknown'
-        }
-
-    c = cards[channel_map[channel_number]]
-    return {
-        'gain': c['gain'],
-        'scale_factor': reader.scale_factor(c['gain']),
-        'on': c['on'],
-        'lpf': c['lpf']
-    }
