@@ -14,7 +14,7 @@ import h5py
 DATA_PATH = path.join(path.dirname(path.abspath(__file__)), "data")
 
 
-def test_shows_help(capsys):
+def test_shows_help():
     with pytest.raises(SystemExit):
         itf2hdf5.main()
 

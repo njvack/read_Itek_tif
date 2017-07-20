@@ -12,7 +12,7 @@ itf_clip_stats.logger.setLevel(logging.DEBUG)
 DATA_PATH = path.join(path.dirname(path.abspath(__file__)), "data")
 
 
-def test_shows_help(capsys):
+def test_shows_help():
     with pytest.raises(SystemExit):
         itf_clip_stats.main()
 
